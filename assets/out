@@ -143,6 +143,11 @@ if [ ! -z "${sonar_sources}" ]; then
   scanner_opts+=" -Dsonar.sources=\"${sonar_sources}\""
 fi
 
+sonar_binaries=$(jq -r '.params.binaries // [] | join(",")' < "${payload}")
+if [ ! -z "${sonar_binaries}" ]; then
+  scanner_opts+=" -Dsonar.binaries=\"${sonar_binaries}\""
+fi
+
 sonar_tests=$(jq -r '.params.tests // [] | join(",")' < "${payload}")
 if [ ! -z "${sonar_tests}" ]; then
   scanner_opts+=" -Dsonar.tests=\"${sonar_tests}\""

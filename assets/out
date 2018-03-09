@@ -84,6 +84,8 @@ if [[ $https_proxy =~ $pattern ]]; then
         SONAR_SCANNER_OPTS+=" -Dhttps.proxyHost=${https_proxy_host} -Dhttps.proxyPort=${https_proxy_port}"
 fi
 
+export SONAR_SCANNER_OPTS
+
 maven_settings_file=$(jq -r '.params.maven_settings_file // ""' < "${payload}")
 if [ ! -z "${maven_settings_file}" ] && [ -f "${maven_settings_file}" ]; then
   scanner_opts+=" -s \"${maven_settings_file}\""
@@ -143,11 +145,6 @@ if [ ! -z "${sonar_sources}" ]; then
   scanner_opts+=" -Dsonar.sources=\"${sonar_sources}\""
 fi
 
-sonar_binaries=$(jq -r '.params.binaries // [] | join(",")' < "${payload}")
-if [ ! -z "${sonar_binaries}" ]; then
-  scanner_opts+=" -Dsonar.binaries=\"${sonar_binaries}\""
-fi
-
 sonar_tests=$(jq -r '.params.tests // [] | join(",")' < "${payload}")
 if [ ! -z "${sonar_tests}" ]; then
   scanner_opts+=" -Dsonar.tests=\"${sonar_tests}\""
@@ -178,8 +175,6 @@ if [ ! -z "${additional_properties}" ]; then
     scanner_opts+=" -D${prop_kv}"
   done
 fi
-
-export SONAR_SCANNER_OPTS
 
 cd "${project_path}"
 echo "Starting sonar-scanner (type: ${scanner_type})..."

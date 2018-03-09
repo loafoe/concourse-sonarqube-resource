@@ -66,6 +66,25 @@ if [ ! -z "${sonar_password}" ]; then
   scanner_opts+=" -Dsonar.password=\"${sonar_password}\""
 fi
 
+# Proxy injection
+pattern='^(([[:alnum:]]+)://)?(([[:alnum:]]+)@)?([^:^@]+)(:([[:digit:]]+))?(.*)$'
+
+# shellcheck disable=SC2154
+if [[ $http_proxy =~ $pattern ]]; then
+        http_proxy_host=${BASH_REMATCH[5]}
+        http_proxy_port=${BASH_REMATCH[7]}
+        scanner_opts+=" -Dhttp.proxyHost=\"${http_proxy_host}\" -Dhttp.proxyPort=\"${http_proxy_port}\""
+fi
+
+# shellcheck disable=SC2154
+if [[ $https_proxy =~ $pattern ]]; then
+        https_proxy_host=${BASH_REMATCH[5]}
+        https_proxy_port=${BASH_REMATCH[7]}
+        scanner_opts+=" -Dhttps.proxyHost=\"${https_proxy_host}\" -Dhttps.proxyPort=\"${https_proxy_port}\""
+fi
+
+echo "Scanner OPTS so far: ${scanner_opts}"
+
 maven_settings_file=$(jq -r '.params.maven_settings_file // ""' < "${payload}")
 if [ ! -z "${maven_settings_file}" ] && [ -f "${maven_settings_file}" ]; then
   scanner_opts+=" -s \"${maven_settings_file}\""
